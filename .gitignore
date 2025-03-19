@@ -1,0 +1,76 @@
+.vs/
+
+# Ignore arquivos gerados automaticamente
+src/**/obj/
+src/**/bin/
+
+# Ignore as pastas bin e obj em todos os n�veis
+**/bin/
+**/obj/
+
+src/**/obj/**
+./obj/
+
+# Ignore arquivos tempor�rios e de cache gerados pelo MSBuild
+**/*.cache
+**/*.pdb
+**/*.sourcelink.json
+**/*.deps.json
+**/*.runtimeconfig.json
+**/*.AssemblyInfo.cs
+**/*.csproj.FileListAbsolute.txt
+**/*.csproj.CoreCompileInputs.cache
+**/*.csproj.AssemblyReference.cache
+**/*.GeneratedMSBuildEditorConfig.editorconfig
+
+# Ignore arquivos e pastas específicos do Visual Studio
+.vs/
+*.user
+*.suo
+
+# Ignore pacotes gerados
+*.nupkg
+*.snupkg
+
+# Ignore logs e relatórios de diagnóstico
+*.log
+**/*.tlog
+
+# Ignore arquivos de publicação e empacotamento
+publish/
+*.Publish.xml
+
+# Ignore configurações de build específicas
+appsettings.Development.json
+
+# Ignore outros arquivos temporários
+*.tmp
+*.temp
+.vs/
+
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Debug/net9.0/Tourmine.Tournament.Infrastructure.csproj.AssemblyReference.cache
+/src/Domain/Tourmine.Tournament.Domain/obj/Debug/net9.0/Tourmine.Tournament.Domain.AssemblyInfo.cs
+/src/Domain/Tourmine.Tournament.Domain/obj/Debug/net9.0/Tourmine.Tournament.Domain.AssemblyInfoInputs.cache
+/src/WebAPI/Tourmine.Tournament.API/obj/Debug/net9.0/Tourmine.Tournament.API.AssemblyInfo.cs
+/src/WebAPI/Tourmine.Tournament.API/obj/Debug/net9.0/Tourmine.Tournament.API.AssemblyInfoInputs.cache
+/src/WebAPI/Tourmine.Tournament.API/obj/Debug/net9.0/Tourmine.Tournament.API.csproj.AssemblyReference.cache
+/src/WebAPI/Tourmine.Tournament.API/obj/project.assets.json
+/src/WebAPI/Tourmine.Tournament.API/obj/project.nuget.cache
+/src/WebAPI/Tourmine.Tournament.API/obj/Tourmine.Tournament.API.csproj.nuget.dgspec.json
+/src/WebAPI/Tourmine.Tournament.API/obj/Tourmine.Tournament.API.csproj.nuget.g.props
+/src/WebAPI/Tourmine.Tournament.API/obj/Tourmine.Tournament.API.csproj.nuget.g.targets
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Debug/net9.0/Tourmine.Tournament.Infrastructure.AssemblyInfo.cs
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Debug/net9.0/Tourmine.Tournament.Infrastructure.AssemblyInfoInputs.cache
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/project.assets.json
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/project.nuget.cache
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Tourmine.Tournament.Infrastructure.csproj.nuget.dgspec.json
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Tourmine.Tournament.Infrastructure.csproj.nuget.g.props
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Tourmine.Tournament.Infrastructure.csproj.nuget.g.targets
+/src/Application/Tourmine.Tournament.Application/obj/Debug/net9.0/Tourmine.Tournament.Application.AssemblyInfo.cs
+/src/Application/Tourmine.Tournament.Application/obj/Debug/net9.0/Tourmine.Tournament.Application.AssemblyInfoInputs.cache
+/src/Application/Tourmine.Tournament.Application/obj/project.assets.json
+/src/Application/Tourmine.Tournament.Application/obj/project.nuget.cache
+/src/Application/Tourmine.Tournament.Application/obj/Tourmine.Tournament.Application.csproj.nuget.dgspec.json
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Debug/net9.0/Tourmine.Tournament.Infrastructure.assets.cache
+/src/Infrastructure/Tourmine.Tournament.Infrastructure/obj/Debug/net9.0/Tourmine.Tournament.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/src/WebAPI/Tourmine.Tournament.API/obj/Debug/net9.0/Tourmine.Tournament.API.assets.cache
