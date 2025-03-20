@@ -1,18 +1,24 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using Tourmine.NotificationService.Models;
+using Tourmine.NotificationService.Services;
 
 namespace Tourmine.NotificationService.Consumers
 {
     public class RabbitMqConsumer 
     {
         private readonly ConnectionFactory _factory;
+        private readonly HttpClient _httpClient;
 
-        public RabbitMqConsumer()
+        public RabbitMqConsumer(HttpClient httpClient)
         {
             _factory = new ConnectionFactory() { HostName = "localhost"};
+            _httpClient = httpClient;
         }
 
         public async Task StartListeningAsync()
@@ -20,31 +26,93 @@ namespace Tourmine.NotificationService.Consumers
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.ExchangeDeclareAsync("tournament.notifications", ExchangeType.Fanout);
+            await channel.ExchangeDeclareAsync("tournament.notifications", ExchangeType.Direct);
 
-            var queueName = await channel.QueueDeclareAsync("", exclusive: true);
-            await channel.QueueBindAsync(queueName, "tournament.notifications", "");
+            string queueSubscription = "tournament.subscription";
+            await channel.QueueDeclareAsync(queueSubscription, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            await channel.QueueBindAsync(queueSubscription, "tournament.notifications", "subscription");
 
-            Console.WriteLine("Listening for messages...");
+            string queueCreation = "tournament.creation";
+            await channel.QueueDeclareAsync(queueCreation, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            await channel.QueueBindAsync(queueCreation, "tournament.notifications", "creation");
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
-            consumer.ReceivedAsync += async (model, ea) =>
+            Console.WriteLine("Waiting for messages...");
+
+            var consumerSubscription = new AsyncEventingBasicConsumer(channel);
+            consumerSubscription.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
+                await ProcessMessageAsync(message, "Subscription");
 
-                await ProcessMessageAsync(message);
+                await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
             };
 
-            await channel.BasicConsumeAsync(queueName, autoAck: true, consumer);
+            var consumerCreation = new AsyncEventingBasicConsumer(channel);
+            consumerCreation.ReceivedAsync += async (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                await ProcessMessageAsync(message, "TournamentCreated");
 
-            await Task.Delay(-1);
+                await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+            };
+
+            // Consumindo as filas SEPARADAMENTE
+            await channel.BasicConsumeAsync(queueSubscription, autoAck: false, consumerSubscription);
+            await channel.BasicConsumeAsync(queueCreation, autoAck: false, consumerCreation);
+
+            // Isso garante que o programa vai esperar indefinidamente pelas mensagens
+            await Task.Delay(Timeout.Infinite);
         }
 
-        private async Task ProcessMessageAsync(string message)
+        private async Task ProcessMessageAsync(string message, string type)
         {
             var notification = JsonSerializer.Deserialize<NotificationSubscription>(message);
-            Console.WriteLine($"Received notification: Tournament ID: {notification.TournamentId}, User ID: {notification.UserId}");
+
+            if (type == "Subscription")
+            {
+                Console.WriteLine($"New Subscription: Tournament ID: {notification.TournamentId}, User ID: {notification.UserId}");
+
+                var response = await _httpClient.GetAsync($"{Settings.TournamentBasePath}{notification.TournamentId}");
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Response content: {responseContent}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // Usa o camelCase para deserializar
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // Ignora propriedades nulas
+                    };
+
+                    var tournament = JsonSerializer.Deserialize<Tournament>(responseContent, options);
+
+                    var responseOrganizer = await _httpClient.GetAsync($"{Settings.UserBasePath}{tournament.UserId}");
+                    var responseContentOrganizer = await responseOrganizer.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Response content organizer: {responseContent}");
+
+                    if (responseOrganizer.IsSuccessStatusCode)
+                    {
+                        var organizer = JsonSerializer.Deserialize<User>(responseContentOrganizer, options);
+                        var organizerEmail = organizer.Email;
+
+                        await EmailService.SendEmailAsync(organizerEmail, "New Tournament Subscription", $"A new user has subscribed to your tournament with ID: {notification.UserId}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Erro ao obter organizador.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Erro ao obter usuário.");
+                }
+            }
+            else if (type == "TournamentCreated")
+            {
+                Console.WriteLine($"New Tournament Created: Tournament ID: {notification.TournamentId}");
+            }
 
             await Task.CompletedTask;
         }
